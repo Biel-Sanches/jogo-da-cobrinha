@@ -15,7 +15,7 @@ const palco = document.getElementById("palco");
 // ===== Configuração =====
 const CELULAS = 21;
 const TAM_CELULA = canvas.width / CELULAS;
-const VELOCIDADE_INICIAL = 160; // ms entre movimentos
+const VELOCIDADE_INICIAL = 160; // ms entre passos lógicos
 const VELOCIDADE_MINIMA = 75;
 const ACELERACAO = 4; // ms mais rápido a cada fruta
 const PONTOS_POR_FRUTA = 10;
@@ -33,6 +33,7 @@ const CORES = {
 
 // ===== Estado =====
 let cobra = [];
+let cobraAnterior = []; // posições do passo anterior, para interpolar o movimento
 let direcao = { x: 1, y: 0 };
 let proximaDirecao = { x: 1, y: 0 };
 let comida = { x: 0, y: 0 };
@@ -41,6 +42,8 @@ let recorde = Number(localStorage.getItem(CHAVE_RECORDE)) || 0;
 let velocidade = VELOCIDADE_INICIAL;
 let estado = "inicio"; // inicio | jogando | pausado | fim
 let timer = null;
+let ultimoTick = 0; // momento do último passo lógico
+const reduzirMovimento = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 recordeEl.textContent = recorde;
 
@@ -53,6 +56,7 @@ function resetar() {
     { x: meio - 1, y: meio },
     { x: meio - 2, y: meio },
   ];
+  cobraAnterior = cobra.map((s) => ({ ...s }));
   direcao = { x: 1, y: 0 };
   proximaDirecao = { x: 1, y: 0 };
   pontos = 0;
@@ -108,7 +112,7 @@ function acaoPrincipal() {
   else comecar();
 }
 
-// ===== Loop =====
+// ===== Loop lógico (passos em grade) =====
 
 function agendarTick() {
   timer = setTimeout(() => {
@@ -118,6 +122,9 @@ function agendarTick() {
 }
 
 function tick() {
+  cobraAnterior = cobra.map((s) => ({ ...s }));
+  ultimoTick = performance.now();
+
   direcao = proximaDirecao;
   const cabeca = { x: cobra[0].x + direcao.x, y: cobra[0].y + direcao.y };
 
@@ -139,8 +146,6 @@ function tick() {
   } else {
     cobra.pop();
   }
-
-  desenhar();
 }
 
 function sortearComida() {
@@ -152,11 +157,11 @@ function sortearComida() {
   comida = { x, y };
 }
 
-// ===== Desenho =====
+// ===== Desenho (interpolado, a cada quadro) =====
 
 function mesclarCor(corA, corB, fracao) {
   const a = parseInt(corA.slice(1), 16);
-  const b = parseInt(corB.slice( 1), 16);
+  const b = parseInt(corB.slice(1), 16);
   const canal = (desloc) => {
     const va = (a >> desloc) & 0xff;
     const vb = (b >> desloc) & 0xff;
@@ -181,7 +186,21 @@ function celulaArredondada(x, y, raio) {
   }
 }
 
-function desenhar() {
+function posicaoInterpolada(indice, progresso) {
+  const de = cobraAnterior[indice] || cobra[indice];
+  const para = cobra[indice];
+  return {
+    x: de.x + (para.x - de.x) * progresso,
+    y: de.y + (para.y - de.y) * progresso,
+  };
+}
+
+function desenhar(agora = performance.now()) {
+  // fração do passo atual já percorrida (0 a 1) — é o que suaviza o movimento
+  const progresso = reduzirMovimento
+    ? 1
+    : Math.min(Math.max((agora - ultimoTick) / velocidade, 0), 1);
+
   // fundo em xadrez
   for (let y = 0; y < CELULAS; y++) {
     for (let x = 0; x < CELULAS; x++) {
@@ -190,33 +209,36 @@ function desenhar() {
     }
   }
 
-  // fruta com brilho
+  // fruta com brilho pulsante
+  const pulso = reduzirMovimento ? 1 : 0.9 + 0.1 * Math.sin(agora / 300);
   const fx = comida.x * TAM_CELULA + TAM_CELULA / 2;
   const fy = comida.y * TAM_CELULA + TAM_CELULA / 2;
   ctx.fillStyle = CORES.brilhoFruta;
   ctx.beginPath();
-  ctx.arc(fx, fy, TAM_CELULA * 0.62, 0, Math.PI * 2);
+  ctx.arc(fx, fy, TAM_CELULA * 0.62 * pulso, 0, Math.PI * 2);
   ctx.fill();
   ctx.fillStyle = CORES.fruta;
   ctx.beginPath();
-  ctx.arc(fx, fy, TAM_CELULA * 0.34, 0, Math.PI * 2);
+  ctx.arc(fx, fy, TAM_CELULA * 0.34 * pulso, 0, Math.PI * 2);
   ctx.fill();
 
-  // corpo (da cauda para a cabeça, para a cabeça ficar por cima)
+  // corpo (da cauda para a cabeça), deslizando entre as células
   for (let i = cobra.length - 1; i >= 1; i--) {
+    const pos = posicaoInterpolada(i, progresso);
     const fracao = i / Math.max(cobra.length - 1, 1);
     ctx.fillStyle = mesclarCor(CORES.cabeca, CORES.cauda, fracao);
-    celulaArredondada(cobra[i].x, cobra[i].y, 6);
+    celulaArredondada(pos.x, pos.y, 6);
     ctx.fill();
   }
 
   // cabeça com olhos
+  const cabeca = posicaoInterpolada(0, progresso);
   ctx.fillStyle = CORES.cabeca;
-  celulaArredondada(cobra[0].x, cobra[0].y, 8);
+  celulaArredondada(cabeca.x, cabeca.y, 8);
   ctx.fill();
 
-  const centroX = cobra[0].x * TAM_CELULA + TAM_CELULA / 2;
-  const centroY = cobra[0].y * TAM_CELULA + TAM_CELULA / 2;
+  const centroX = cabeca.x * TAM_CELULA + TAM_CELULA / 2;
+  const centroY = cabeca.y * TAM_CELULA + TAM_CELULA / 2;
   const deslocOlho = TAM_CELULA * 0.16;
   const olhoX = centroX + direcao.x * deslocOlho;
   const olhoY = centroY + direcao.y * deslocOlho;
@@ -228,6 +250,13 @@ function desenhar() {
     ctx.arc(olhoX + lateralX * sinal, olhoY + lateralY * sinal, TAM_CELULA * 0.09, 0, Math.PI * 2);
     ctx.fill();
   }
+}
+
+// ===== Loop de renderização contínuo (60 quadros por segundo) =====
+
+function lacoDesenho(agora) {
+  desenhar(agora);
+  requestAnimationFrame(lacoDesenho);
 }
 
 // ===== Controles =====
@@ -301,4 +330,4 @@ btnJogar.addEventListener("click", () => {
 
 // ===== Início =====
 resetar();
-desenhar();
+requestAnimationFrame(lacoDesenho);

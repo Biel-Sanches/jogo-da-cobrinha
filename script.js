@@ -22,13 +22,13 @@ const PONTOS_POR_FRUTA = 10;
 const CHAVE_RECORDE = "snake-recorde";
 
 const CORES = {
-  tabuleiro: "#0e1629",
-  casa: "#111b30",
-  fruta: "#f87171",
-  brilhoFruta: "rgba(248, 113, 113, 0.35)",
-  cabeca: "#38bdf8",
-  cauda: "#818cf8",
-  olho: "#04121f",
+  tabuleiro: "#0d0d18",
+  casa: "#111122",
+  fruta: "#facc15",
+  brilhoFruta: "rgba(250, 204, 21, 0.35)",
+  cabeca: "#22d3ee",
+  cauda: "#e879f9",
+  olho: "#0a0a12",
 };
 
 // ===== Estado =====
@@ -209,10 +209,12 @@ function desenhar(agora = performance.now()) {
     }
   }
 
-  // fruta com brilho pulsante
+  // fruta com brilho pulsante e glow neon
   const pulso = reduzirMovimento ? 1 : 0.9 + 0.1 * Math.sin(agora / 300);
   const fx = comida.x * TAM_CELULA + TAM_CELULA / 2;
   const fy = comida.y * TAM_CELULA + TAM_CELULA / 2;
+  ctx.shadowColor = CORES.fruta;
+  ctx.shadowBlur = 16;
   ctx.fillStyle = CORES.brilhoFruta;
   ctx.beginPath();
   ctx.arc(fx, fy, TAM_CELULA * 0.62 * pulso, 0, Math.PI * 2);
@@ -222,20 +224,26 @@ function desenhar(agora = performance.now()) {
   ctx.arc(fx, fy, TAM_CELULA * 0.34 * pulso, 0, Math.PI * 2);
   ctx.fill();
 
-  // corpo (da cauda para a cabeça), deslizando entre as células
+  // corpo (da cauda para a cabeça), deslizando entre as células com glow
   for (let i = cobra.length - 1; i >= 1; i--) {
     const pos = posicaoInterpolada(i, progresso);
     const fracao = i / Math.max(cobra.length - 1, 1);
-    ctx.fillStyle = mesclarCor(CORES.cabeca, CORES.cauda, fracao);
+    const cor = mesclarCor(CORES.cabeca, CORES.cauda, fracao);
+    ctx.fillStyle = cor;
+    ctx.shadowColor = cor;
+    ctx.shadowBlur = 8;
     celulaArredondada(pos.x, pos.y, 6);
     ctx.fill();
   }
 
-  // cabeça com olhos
+  // cabeça com olhos e glow mais forte
   const cabeca = posicaoInterpolada(0, progresso);
   ctx.fillStyle = CORES.cabeca;
+  ctx.shadowColor = CORES.cabeca;
+  ctx.shadowBlur = 14;
   celulaArredondada(cabeca.x, cabeca.y, 8);
   ctx.fill();
+  ctx.shadowBlur = 0;
 
   const centroX = cabeca.x * TAM_CELULA + TAM_CELULA / 2;
   const centroY = cabeca.y * TAM_CELULA + TAM_CELULA / 2;

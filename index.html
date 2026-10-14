@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Jogo da Cobrinha (Snake) feito com HTML, CSS e JavaScript puro — um projeto de Gabriel Sanches." />
+  <title>Jogo da Cobrinha · Gabriel Sanches</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <main class="pagina">
+    <header class="cabecalho">
+      <h1 class="titulo">🐍 Jogo da Cobrinha</h1>
+      <div class="placar">
+        <div class="placar-item">
+          <span class="rotulo">Pontos</span>
+          <span class="valor" id="pontos">0</span>
+        </div>
+        <div class="placar-item">
+          <span class="rotulo">Recorde</span>
+          <span class="valor destaque" id="recorde">0</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="palco" id="palco">
+      <canvas id="jogo" width="630" height="630" role="img" aria-label="Área do jogo da cobrinha"></canvas>
+
+      <div class="overlay" id="overlay">
+        <p class="overlay-emoji" id="overlay-emoji">🐍</p>
+        <h2 class="overlay-titulo" id="overlay-titulo">Vamos jogar?</h2>
+        <p class="overlay-texto" id="overlay-texto">
+          Use as setas ou WASD para mover. Coma as frutas, cresça e não bata nas paredes nem em você mesmo!
+        </p>
+        <button class="botao" id="btn-jogar">Jogar</button>
+      </div>
+    </div>
+
+    <p class="dica">Espaço começa, pausa e retoma · no celular, arraste na tela para mudar a direção</p>
+
+    <footer class="rodape">
+      <p>
+        Feito com HTML, CSS e JavaScript puro por
+        <a href="https://github.com/Biel-Sanches" target="_blank" rel="noopener">Gabriel Sanches</a>
+      </p>
+    </footer>
+  </main>
+
+  <script src="script.js"></script>
+</body>
+</html>

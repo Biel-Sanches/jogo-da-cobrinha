@@ -1,0 +1,211 @@
+/* ==========================================================================
+   Jogo da Cobrinha — mesmo tema do portfólio (escuro + gradiente azul/violeta)
+   ========================================================================== */
+
+:root {
+  --cor-fundo: #0b1120;
+  --cor-superficie: #131e33;
+  --cor-borda: #22304b;
+  --cor-tabuleiro: #0e1629;
+  --cor-casa: #111b30;
+  --cor-texto: #e2e8f0;
+  --cor-texto-suave: #94a3b8;
+  --cor-destaque: #38bdf8;
+  --cor-destaque-2: #818cf8;
+  --cor-fruta: #f87171;
+  --gradiente: linear-gradient(135deg, #38bdf8, #818cf8);
+  --raio: 14px;
+  --fonte: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --transicao: 0.25s ease;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--fonte);
+  background-color: var(--cor-fundo);
+  background-image:
+    radial-gradient(600px 300px at 85% -5%, rgba(56, 189, 248, 0.12), transparent 70%),
+    radial-gradient(700px 350px at 0% 30%, rgba(129, 140, 248, 0.08), transparent 70%);
+  color: var(--cor-texto);
+  line-height: 1.6;
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+}
+
+.pagina {
+  width: min(680px, 100% - 2rem);
+  margin-inline: auto;
+  padding-block: 2rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+/* ===== Cabeçalho e placar ===== */
+
+.cabecalho {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.titulo {
+  font-size: clamp(1.4rem, 4vw, 1.8rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.placar {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.placar-item {
+  background: var(--cor-superficie);
+  border: 1px solid var(--cor-borda);
+  border-radius: var(--raio);
+  padding: 0.5rem 1.1rem;
+  min-width: 6.2rem;
+  text-align: center;
+}
+
+.placar-item .rotulo {
+  display: block;
+  font-size: 0.72rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cor-texto-suave);
+}
+
+.placar-item .valor {
+  display: block;
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.placar-item .destaque {
+  background: var(--gradiente);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+/* ===== Palco / tabuleiro ===== */
+
+.palco {
+  position: relative;
+  border-radius: var(--raio);
+  overflow: hidden;
+  border: 1px solid var(--cor-borda);
+  box-shadow: 0 10px 30px rgba(2, 6, 23, 0.45);
+}
+
+canvas {
+  display: block;
+  width: 100%;
+  height: auto;
+  touch-action: none;
+}
+
+/* ===== Overlay (início / pausa / fim) ===== */
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  text-align: center;
+  padding: 1.5rem;
+  background: rgba(11, 17, 32, 0.82);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+}
+
+.overlay.oculto {
+  display: none;
+}
+
+.overlay-emoji {
+  font-size: 3rem;
+  line-height: 1;
+}
+
+.overlay-titulo {
+  font-size: clamp(1.4rem, 5vw, 2rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.overlay-texto {
+  color: var(--cor-texto-suave);
+  max-width: 24rem;
+  font-size: 0.95rem;
+}
+
+.botao {
+  margin-top: 0.75rem;
+  display: inline-block;
+  padding: 0.8rem 2rem;
+  border: none;
+  border-radius: 999px;
+  font-family: inherit;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  background: var(--gradiente);
+  color: #04121f;
+  transition: transform var(--transicao), box-shadow var(--transicao);
+}
+
+.botao:hover,
+.botao:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(56, 189, 248, 0.35);
+  outline: none;
+}
+
+/* ===== Dica e rodapé ===== */
+
+.dica {
+  text-align: center;
+  color: var(--cor-texto-suave);
+  font-size: 0.85rem;
+}
+
+.rodape {
+  text-align: center;
+  color: var(--cor-texto-suave);
+  font-size: 0.85rem;
+}
+
+.rodape a {
+  color: var(--cor-destaque);
+  text-decoration: none;
+  font-weight: 600;
+}
+
+.rodape a:hover {
+  text-decoration: underline;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition: none !important;
+  }
+}
